@@ -1,4 +1,7 @@
 from rest_framework.views import APIView, Request, Response, status
+
+from utils.common_views import PostView
+from utils.details_views import GetDetailView, PatchDetailView
 from .models import User
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .serializers import UserSerializer
@@ -6,48 +9,17 @@ from django.shortcuts import get_object_or_404
 from .permissions import IsAccountOwner
 
 
-class UserView(APIView):
-    def post(self, request: Request) -> Response:
-        """
-        Registro de usuários
-        """
-        serializer = UserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        serializer.save()
-
-        return Response(serializer.data, status.HTTP_201_CREATED)
+class UserView(PostView):
+    queryset = User.objects.all()        
+    serializer = UserSerializer
 
 
-class UserDetailView(APIView):
+class UserDetailView(GetDetailView, PatchDetailView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAccountOwner]
 
-    def get(self, request: Request, pk: int) -> Response:
-        """
-        Obtençao de usuário
-        """
-        user = get_object_or_404(User, pk=pk)
-
-        self.check_object_permissions(request, user)
-
-        serializer = UserSerializer(user)
-
-        return Response(serializer.data)
-
-    def patch(self, request: Request, pk: int) -> Response:
-        """
-        Atualização de usuário
-        """
-        user = get_object_or_404(User, pk=pk)
-
-        self.check_object_permissions(request, user)
-
-        serializer = UserSerializer(user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        return Response(serializer.data)
+    queryset = User.objects.all()        
+    serializer = UserSerializer
 
     def delete(self, request: Request, pk: int) -> Response:
         """
@@ -60,3 +32,26 @@ class UserDetailView(APIView):
         user.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# from rest_framework.views import APIView, Request, Response, status
+
+# from utils.common_views import PostView
+# from .models import User
+# from rest_framework_simplejwt.authentication import JWTAuthentication
+# from .serializers import UserSerializer
+# from .permissions import IsAccountOwner
+# from utils.details_views import OnlyDeleteDetailView, OnlyGetDetailView, OnlyPatchDetailView
+
+
+# class UserView(PostView):
+#     queryset = User.objects.all()        
+#     serializer = UserSerializer
+
+
+# class UserDetailView(OnlyGetDetailView, OnlyPatchDetailView, OnlyDeleteDetailView):
+#     authentication_classes = [JWTAuthentication]
+#     permission_classes = [IsAccountOwner]
+    
+#     view_queryset = User.objects.all()
+#     view_serializer = UserSerializer

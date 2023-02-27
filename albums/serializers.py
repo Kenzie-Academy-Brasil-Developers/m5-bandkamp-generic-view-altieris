@@ -12,6 +12,4 @@ class AlbumSerializer(serializers.ModelSerializer):
         model = Album
         fields = ['id', 'name', 'year', 'user_id']
 
-        read_only_fields = [
-            'user_id'
-        ]
+        read_only_fields = ['user_id']
